@@ -16,48 +16,47 @@ class Knight
   end
 
   def validate_input(current_position, target)
-    for k in 0..1
-      unless current_position[k].between?(1, 8) && target[k].between?(1, 8)
-       exit
-      end
+    (0..1).each do |k|
+      exit unless current_position[k].between?(1, 8) && target[k].between?(1, 8)
     end
   end
 
-  def valid_moves(current_position, valid_moves = [])
-    moves = []
-    moves << [(current_position[0] + 2), (current_position[1] + 1)]
-    moves << [(current_position[0] + 2), (current_position[1] - 1)]
-    moves << [(current_position[0] - 2), (current_position[1] + 1)]
-    moves << [(current_position[0] - 2), (current_position[1] - 1)]
-    moves << [(current_position[0] + 1), (current_position[1] + 2)]
-    moves << [(current_position[0] - 1), (current_position[1] + 2)]
-    moves << [(current_position[0] + 1), (current_position[1] - 2)]
-    moves << [(current_position[0] - 1), (current_position[1] - 2)]
+  def valid_moves(current_position)
+    available_moves = []
+    available_moves << [(current_position[0] + 2), (current_position[1] + 1)]
+    available_moves << [(current_position[0] + 2), (current_position[1] - 1)]
+    available_moves << [(current_position[0] - 2), (current_position[1] + 1)]
+    available_moves << [(current_position[0] - 2), (current_position[1] - 1)]
+    available_moves << [(current_position[0] + 1), (current_position[1] + 2)]
+    available_moves << [(current_position[0] - 1), (current_position[1] + 2)]
+    available_moves << [(current_position[0] + 1), (current_position[1] - 2)]
+    available_moves << [(current_position[0] - 1), (current_position[1] - 2)]
 
-    moves.each do |move|
-      valid_moves << move if @board.include?(move)
+    @valid_moves = []
+    available_moves.each do |move|
+      @valid_moves << move if @board.include?(move)
     end
-    # print valid_moves
-    valid_moves
+    @valid_moves
   end
 
-  def knight_move(current_position, target, route = [], queue = [], possible_moves = {})
+  def knight_move(current_position, target, route = [], queue = [])
     validate_input(current_position, target)
     @root = current_position if @root.nil?
     # hash is equal to all valid moves from current position
-    possible_moves[current_position] = valid_moves(current_position)
+    if valid_moves(current_position).include?(target)
+      route.unshift(target)
 
-    if possible_moves[current_position].include?(target)
-      route << target
       knight_move(@root, current_position, route) until route.include?(@root)
-      return "You made it in #{route.size - 1} moves! Here's your route: #{route.reverse}"
+      return "You made it in #{route.size - 1} moves! Here's your route: #{route}"
     else
-      possible_moves.values.each { |value| value.each { |value| queue << value } }
-      current_position = queue.shift
-      knight_move(current_position, target, route, queue, possible_moves)
+      @valid_moves.each do |value|
+        queue << value
+      end
+      current_position = queue.shift # returns first elements then removes it
+      knight_move(current_position, target, route, queue)
     end
   end
 end
 
 x = Knight.new
-puts x.knight_move([8, 8], [1, 2])
+puts x.knight_move([1, 1], [8, 8])
